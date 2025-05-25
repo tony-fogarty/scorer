@@ -2,8 +2,14 @@
   <div class="max-w-xl mx-auto p-6 space-y-6">
     <h2 class="text-2xl font-semibold text-center">Game Settings</h2>
 
-    <!-- Player 1 -->
+    <!-- error if accessing game page directly  -->
+     <div v-if="errorMessage" class="text-red-500 mb-4">{{ errorMessage }}</div>
+
+    <!-- Player names Section -->
     <div>
+      <div v-if="duplicateNameError" class="text-red-500 text-sm mb-2">
+        {{ duplicateNameError }}
+      </div>
       <label class="block font-medium">Player 1 Name</label>
       <input
         v-model="player1"
@@ -18,7 +24,6 @@
       </label>
     </div>
 
-    <!-- Player 2 -->
     <div>
       <label class="block font-medium">Player 2 Name</label>
       <input
@@ -93,21 +98,25 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
+import { usePage } from '@inertiajs/vue3';
 
-const player1 = ref('')
-const player2 = ref('')
-const throwFirst = ref('1')
-const gameType = ref('501')
-const totalSets = ref(1)
-const totalLegs = ref(1)
+const page = usePage();
+const player1 = ref('');
+const player2 = ref('');
+const throwFirst = ref('1');
+const gameType = ref('501');
+const totalSets = ref(1);
+const totalLegs = ref(1);
 const setsError = ref('');
 const legsError = ref('');
 
 // Error states
-const player1Error = ref('')
-const player2Error = ref('')
+const player1Error = ref('');
+const player2Error = ref('');
+const duplicateNameError = ref('');
+const errorMessage = computed(() => page.props.error || '');
 
 function startGame() {
   // Reset errors
@@ -115,8 +124,9 @@ function startGame() {
   player2Error.value = '';
   setsError.value = '';
   legsError.value = '';
+  duplicateNameError.value = '';
 
-  // Validation
+  // Name Validation
   let hasError = false;
   if (!player1.value.trim()) {
     player1Error.value = 'Player 1 name is required.'
@@ -125,6 +135,16 @@ function startGame() {
   if (!player2.value.trim()) {
     player2Error.value = 'Player 2 name is required.'
     hasError = true;
+  }
+
+  // Check for duplicate player names (case-insensitive)
+  if (
+    player1.value.trim().toLowerCase() === player2.value.trim().toLowerCase()
+  ) {
+    duplicateNameError.value = 'Player names must be different.';
+    hasError = true;
+  } else {
+    duplicateNameError.value = '';
   }
 
   // Sets Validation
@@ -159,7 +179,7 @@ function startGame() {
 
   if (hasError) return;
 
-  router.visit('/match', {
+  router.visit('/game', {
     data: {
       player1: player1.value,
       player2: player2.value,

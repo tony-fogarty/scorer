@@ -15,8 +15,8 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
      {
-        title: 'Match Settings',
-        href: '/match-settings',
+        title: 'Game Settings',
+        href: '/game-settings',
         icon: LayoutGrid,
     },
 ];
@@ -42,7 +42,7 @@ const footerNavItems: NavItem[] = [
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
                         <Link :href="route('dashboard')">
-                            <AppLogo />efe
+                            <AppLogo />
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

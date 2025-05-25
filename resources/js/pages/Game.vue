@@ -196,8 +196,8 @@ const finishLeg = (dartsUsed) => {
     if (legs1.value >= legsToWin.value) {
       sets1.value++;
       if (sets1.value >= setsToWin.value) {
-        alert(`${player1.value} wins the match!`);
-        window.location.href = '/match-settings';
+        alert(`${player1.value} wins the game!`);
+        window.location.href = '/game-settings';
         return;
       }
       resetSet();
@@ -209,8 +209,8 @@ const finishLeg = (dartsUsed) => {
     if (legs2.value >= legsToWin.value) {
       sets2.value++;
       if (sets2.value >= setsToWin.value) {
-        alert(`${player2.value} wins the match!`);
-        window.location.href = '/match-settings';
+        alert(`${player2.value} wins the game!`);
+        window.location.href = '/game-settings';
         return;
       }
       resetSet();
