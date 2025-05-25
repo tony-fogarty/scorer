@@ -126,15 +126,18 @@ import { ref, onMounted, nextTick, computed, onBeforeUnmount } from 'vue';
 import { usePage } from '@inertiajs/vue3'
 
 const page = usePage();
+console.log('Page props:', page.props); 
+
 const player1 = ref(page.props.player1 || '');
 const player2 = ref(page.props.player2 || '');
 const throwFirst = ref(Number(page.props.throwFirst) || 1);
 const gameType = ref(Number(page.props.gameType) || 501);
 const totalSets = ref(Number(page.props.totalSets) || 1);
 const totalLegs = ref(Number(page.props.totalLegs) || 1);
+
 const score = ref('');
-const score1 = ref(0);
-const score2 = ref(0);
+const score1 = ref(gameType.value);
+const score2 = ref(gameType.value);
 const legs1 = ref(0);
 const legs2 = ref(0);
 const sets1 = ref(0);
@@ -146,16 +149,6 @@ const player2History = ref([]);
 const scoreInput = ref(null);
 const showDartsModal = ref(false);
 const winner = ref(null);
-
-
-const params = new URLSearchParams(window.location.search);
-player1.value = params.get('player1');
-player2.value = params.get('player2');
-throwFirst.value = parseInt(params.get('throwFirst'));
-gameType.value = parseInt(params.get('gameType'));
-totalSets.value = parseInt(params.get('totalSets')) || 1;
-totalLegs.value = parseInt(params.get('totalLegs')) || 1;
-score1.value = score2.value = gameType.value;
 
 const legsToWin = computed(() => Math.ceil(totalLegs.value / 2));
 const setsToWin = computed(() => Math.ceil(totalSets.value / 2));

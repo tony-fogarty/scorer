@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+
 
 class MatchController extends Controller
 {
@@ -29,6 +30,9 @@ class MatchController extends Controller
     {
         // Retrieve settings from session or database
         $settings = session('match_settings', []);
+
+            // Add this to debug:
+        Log::info('Match settings:', $settings);
 
         return Inertia::render('Match', $settings);
     }

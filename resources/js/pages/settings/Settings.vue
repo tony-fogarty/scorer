@@ -60,7 +60,9 @@
           step="2"
           v-model.number="totalSets"
           class="w-24 px-2 py-1 border rounded"
+          :class="{'border-red-500': setsError}"
         />
+        <div v-if="setsError" class="text-red-500 text-sm mt-1">{{ setsError }}</div>
       </div>
       <div>
         <label for="totalLegs" class="block mb-1 font-medium">Legs:</label>
@@ -72,7 +74,9 @@
           step="2"
           v-model.number="totalLegs"
           class="w-24 px-2 py-1 border rounded"
+          :class="{'border-red-500': legsError}"
         />
+      <div v-if="legsError" class="text-red-500 text-sm mt-1">{{ legsError }}</div>  
       </div>
     </div>
 
@@ -98,6 +102,8 @@ const throwFirst = ref('1')
 const gameType = ref('501')
 const totalSets = ref(1)
 const totalLegs = ref(1)
+const setsError = ref('');
+const legsError = ref('');
 
 // Error states
 const player1Error = ref('')
@@ -105,23 +111,53 @@ const player2Error = ref('')
 
 function startGame() {
   // Reset errors
-  player1Error.value = ''
-  player2Error.value = ''
+  player1Error.value = '';
+  player2Error.value = '';
+  setsError.value = '';
+  legsError.value = '';
 
   // Validation
-  let hasError = false
+  let hasError = false;
   if (!player1.value.trim()) {
     player1Error.value = 'Player 1 name is required.'
-    hasError = true
+    hasError = true;
   }
   if (!player2.value.trim()) {
     player2Error.value = 'Player 2 name is required.'
-    hasError = true
+    hasError = true;
   }
 
-  if (hasError) {
-    return
+  // Sets Validation
+  if (
+    !Number.isInteger(totalSets.value) ||
+    totalSets.value < 1 ||
+    totalSets.value > 11
+  ) {
+    setsError.value = 'Sets must be an odd number between 1 and 11.';
+    hasError = true;
+  } 
+
+  // Legs Validation
+  if (
+    !Number.isInteger(totalLegs.value) ||
+    totalLegs.value < 1 ||
+    totalLegs.value > 11
+  ) {
+    legsError.value = 'Legs must be an odd number between 1 and 11.';
+    hasError = true;
   }
+
+  // Odd number validation (since step=2 in UI, but user might type directly)
+  if (totalSets.value % 2 !== 1) {
+    setsError.value = 'Sets must be an odd number.';
+    hasError = true;
+  }
+  if (totalLegs.value % 2 !== 1) {
+    legsError.value = 'Legs must be an odd number.';
+    hasError = true;
+  }
+
+  if (hasError) return;
 
   router.visit('/match', {
     data: {
