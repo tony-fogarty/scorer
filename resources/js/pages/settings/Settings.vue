@@ -1,0 +1,105 @@
+
+<template>
+  <div class="max-w-xl mx-auto p-6 space-y-6">
+    <h2 class="text-2xl font-semibold text-center">Game Settings</h2>
+
+    <!-- Player 1 -->
+    <div>
+      <label class="block font-medium">Player 1 Name</label>
+      <input v-model="player1" type="text" class="mt-1 w-full border rounded px-3 py-2" />
+      <label class="inline-flex items-center mt-2">
+        <input type="radio" value="1" v-model="throwFirst" />
+        <span class="ml-2">Player 1 Throws First</span>
+      </label>
+    </div>
+
+    <!-- Player 2 -->
+    <div>
+      <label class="block font-medium">Player 2 Name</label>
+      <input v-model="player2" type="text" class="mt-1 w-full border rounded px-3 py-2" />
+      <label class="inline-flex items-center mt-2">
+        <input type="radio" value="2" v-model="throwFirst" />
+        <span class="ml-2">Player 2 Throws First</span>
+      </label>
+    </div>
+
+    <!-- Game Type -->
+    <div>
+      <label class="block font-medium mb-2">Game Type</label>
+      <label class="inline-flex items-center mr-4">
+        <input type="radio" value="301" v-model="gameType" />
+        <span class="ml-2">301</span>
+      </label>
+      <label class="inline-flex items-center">
+        <input type="radio" value="501" v-model="gameType" />
+        <span class="ml-2">501</span>
+      </label>
+    </div>
+
+    <!-- Format Section -->
+    <div class="mt-6">
+      <h3 class="text-lg font-semibold mb-2">Format</h3>
+      <div class="mb-4">
+        <label for="totalSets" class="block mb-1 font-medium">Sets:</label>
+        <input
+          id="totalSets"
+          type="number"
+          min="1"
+          max="11"
+          step="2"
+          v-model.number="totalSets"
+          class="w-24 px-2 py-1 border rounded"
+        />
+      </div>
+      <div>
+        <label for="totalLegs" class="block mb-1 font-medium">Legs:</label>
+        <input
+          id="totalLegs"
+          type="number"
+          min="1"
+          max="11"
+          step="2"
+          v-model.number="totalLegs"
+          class="w-24 px-2 py-1 border rounded"
+        />
+      </div>
+    </div>
+
+    <!-- Play Button -->
+    <div>
+      <button
+        :disabled="!player1 || !player2 || !throwFirst || !gameType"
+        class="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+        @click="startGame"
+      >
+        Play Now
+      </button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { router } from '@inertiajs/vue3'
+
+const player1 = ref('')
+const player2 = ref('')
+const throwFirst = ref('1')    // default to Player 1
+const gameType = ref('501')    // default to 501
+const totalSets = ref(1)
+const totalLegs = ref(1)
+
+function startGame() {
+  router.visit('/match', {
+    data: {
+      player1: player1.value,
+      player2: player2.value,
+      throwFirst: throwFirst.value,
+      gameType: gameType.value,
+      totalSets: totalSets.value,
+      totalLegs: totalLegs.value,
+    },
+    method: 'get',
+  })
+}
+</script>
