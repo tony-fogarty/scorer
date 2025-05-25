@@ -123,7 +123,15 @@
 
 <script setup>
 import { ref, onMounted, nextTick, computed, onBeforeUnmount } from 'vue';
+import { usePage } from '@inertiajs/vue3'
 
+const page = usePage();
+const player1 = ref(page.props.player1 || '');
+const player2 = ref(page.props.player2 || '');
+const throwFirst = ref(Number(page.props.throwFirst) || 1);
+const gameType = ref(Number(page.props.gameType) || 501);
+const totalSets = ref(Number(page.props.totalSets) || 1);
+const totalLegs = ref(Number(page.props.totalLegs) || 1);
 const score = ref('');
 const score1 = ref(0);
 const score2 = ref(0);
@@ -131,12 +139,6 @@ const legs1 = ref(0);
 const legs2 = ref(0);
 const sets1 = ref(0);
 const sets2 = ref(0);
-const player1 = ref('');
-const player2 = ref('');
-const gameType = ref(501);
-const totalLegs = ref(1);
-const totalSets = ref(1);
-const throwFirst = ref(1);
 const activePlayer = ref(1);
 const currentThrower = ref(1);
 const player1History = ref([]);
@@ -145,7 +147,7 @@ const scoreInput = ref(null);
 const showDartsModal = ref(false);
 const winner = ref(null);
 
-// Read route params
+
 const params = new URLSearchParams(window.location.search);
 player1.value = params.get('player1');
 player2.value = params.get('player2');

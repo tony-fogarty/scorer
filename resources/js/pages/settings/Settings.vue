@@ -1,4 +1,3 @@
-
 <template>
   <div class="max-w-xl mx-auto p-6 space-y-6">
     <h2 class="text-2xl font-semibold text-center">Game Settings</h2>
@@ -6,7 +5,13 @@
     <!-- Player 1 -->
     <div>
       <label class="block font-medium">Player 1 Name</label>
-      <input v-model="player1" type="text" class="mt-1 w-full border rounded px-3 py-2" />
+      <input
+        v-model="player1"
+        type="text"
+        class="mt-1 w-full border rounded px-3 py-2"
+        :class="{'border-red-500': player1Error}"
+      />
+      <div v-if="player1Error" class="text-red-500 text-sm mt-1">{{ player1Error }}</div>
       <label class="inline-flex items-center mt-2">
         <input type="radio" value="1" v-model="throwFirst" />
         <span class="ml-2">Player 1 Throws First</span>
@@ -16,7 +21,13 @@
     <!-- Player 2 -->
     <div>
       <label class="block font-medium">Player 2 Name</label>
-      <input v-model="player2" type="text" class="mt-1 w-full border rounded px-3 py-2" />
+      <input
+        v-model="player2"
+        type="text"
+        class="mt-1 w-full border rounded px-3 py-2"
+        :class="{'border-red-500': player2Error}"
+      />
+      <div v-if="player2Error" class="text-red-500 text-sm mt-1">{{ player2Error }}</div>
       <label class="inline-flex items-center mt-2">
         <input type="radio" value="2" v-model="throwFirst" />
         <span class="ml-2">Player 2 Throws First</span>
@@ -68,7 +79,6 @@
     <!-- Play Button -->
     <div>
       <button
-        :disabled="!player1 || !player2 || !throwFirst || !gameType"
         class="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
         @click="startGame"
       >
@@ -84,12 +94,35 @@ import { router } from '@inertiajs/vue3'
 
 const player1 = ref('')
 const player2 = ref('')
-const throwFirst = ref('1')    // default to Player 1
-const gameType = ref('501')    // default to 501
+const throwFirst = ref('1')
+const gameType = ref('501')
 const totalSets = ref(1)
 const totalLegs = ref(1)
 
+// Error states
+const player1Error = ref('')
+const player2Error = ref('')
+
 function startGame() {
+  // Reset errors
+  player1Error.value = ''
+  player2Error.value = ''
+
+  // Validation
+  let hasError = false
+  if (!player1.value.trim()) {
+    player1Error.value = 'Player 1 name is required.'
+    hasError = true
+  }
+  if (!player2.value.trim()) {
+    player2Error.value = 'Player 2 name is required.'
+    hasError = true
+  }
+
+  if (hasError) {
+    return
+  }
+
   router.visit('/match', {
     data: {
       player1: player1.value,
@@ -99,7 +132,7 @@ function startGame() {
       totalSets: totalSets.value,
       totalLegs: totalLegs.value,
     },
-    method: 'get',
+    method: 'post',
   })
 }
 </script>
