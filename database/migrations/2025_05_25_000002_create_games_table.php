@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('games', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
-            $table->string('player1');
-            $table->string('player2');
+            $table->foreignId('player1_id')->nullable()->constrained('players');
+            $table->foreignId('player2_id')->nullable()->constrained('players');
             $table->json('settings'); // Stores legs, sets, game type, etc
             $table->json('state')->nullable(); // Stores current match state (scores, progress)
-            $table->enum('status', ['in_progress', 'finished'])->default('in_progress');
+            $table->enum('status', ['aborted', 'in_progress', 'complete'])->default('in_progress');
             $table->timestamps();
         });
     }

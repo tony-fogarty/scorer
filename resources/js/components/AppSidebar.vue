@@ -15,8 +15,18 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
      {
-        title: 'Game Settings',
+        title: 'New Game',
         href: '/game-settings',
+        icon: LayoutGrid,
+    },
+        {
+        title: 'Game History',
+        href: '/games',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Players',
+        href: '/players',
         icon: LayoutGrid,
     },
 ];

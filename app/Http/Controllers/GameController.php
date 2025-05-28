@@ -6,16 +6,26 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Game;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Response;
-use Inertia\ResponseFactory;
+use Illuminate\Support\Facades\Log;
 
 class GameController extends Controller
 {
+    public function index()
+    {
+        $games = Game::with(['player1', 'player2'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('Game', [
+            'games' => $games,
+        ]);
+    }
+    
     public function store(Request $request)
     {
         $data = $request->validate([
-            'player1' => 'required|string|max:255',
-            'player2' => 'required|string|max:255',
+            'player1' => 'required|exists:players,id',
+            'player2' => 'required|exists:players,id|different:player1',
             'throwFirst' => 'required|in:1,2',
             'gameType' => 'required|in:301,501',
             'totalSets' => 'required|integer|min:1|max:11',
@@ -24,8 +34,8 @@ class GameController extends Controller
 
         $game = Game::create([
             'user_id' => Auth::id(),
-            'player1' => $data['player1'],
-            'player2' => $data['player2'],
+            'player1_id' => $data['player1'],
+            'player2_id' => $data['player2'],
             'settings' => [
                 'throwFirst' => $data['throwFirst'],
                 'gameType' => $data['gameType'],
@@ -41,12 +51,77 @@ class GameController extends Controller
 
     public function show($id)
     {
-        $game = Game::findOrFail($id);
+        $game = Game::with(['player1', 'player2'])->findOrFail($id);
 
         if ($game->user_id !== Auth::id()) abort(403);
 
         return Inertia::render('Game/Play', [
             'game' => $game,
+            'player1' => $game->player1,
+            'player2' => $game->player2,
+        ]);
+    }
+
+    /**
+     * Update the state of the game (and optionally the status).
+     * If the status is set to "complete", redirect to games list with a flash message.
+     */
+    public function updateState(Request $request, $id)
+    {
+        $game = Game::findOrFail($id);
+        $game->state = $request->input('state');
+        // Allow updating status if provided (e.g., 'complete' when game ends)
+        if ($request->has('status')) {
+            $game->status = $request->input('status');
+        }
+        $game->save();
+
+        // If finishing the game, redirect to games list with flash message for Inertia
+        if ($request->has('status') && $request->input('status') === 'complete') {
+            return redirect()->route('games.index')->with('success', 'Game finished!');
+        }
+
+        // Otherwise, just return success JSON (for normal state updates)
+        return response()->json(['success' => true]);
+    }
+
+    public function saveStats(Request $request, $gameId)
+    {
+        Log::info('saveStats called', ['gameId' => $gameId, 'payload' => $request->all()]);
+
+        try {
+            foreach ($request->stats as $stat) {
+                Log::info('Processing stat', $stat);
+
+                \App\Models\PlayerGameStat::updateOrCreate(
+                    [
+                        'game_id' => $gameId,
+                        'player_id' => $stat['player_id'],
+                    ],
+                    $stat
+                );
+            }
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Error in saveStats', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function showSummary($id)
+    {
+        $game = Game::with(['player1', 'player2', 'playerStats'])->findOrFail($id);
+
+        // If you have stats in state, extract/calculate them here as needed
+
+        return Inertia::render('Game/Summary', [
+            'game' => $game,
+            'player1' => $game->player1,
+            'player2' => $game->player2,
+            'stats' => $game->playerStats,  // Array of player stats for this game
         ]);
     }
 }

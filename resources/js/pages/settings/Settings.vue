@@ -3,20 +3,22 @@
     <h2 class="text-2xl font-semibold text-center">Game Settings</h2>
 
     <!-- error if accessing game page directly  -->
-     <div v-if="errorMessage" class="text-red-500 mb-4">{{ errorMessage }}</div>
+    <div v-if="errorMessage" class="text-red-500 mb-4">{{ errorMessage }}</div>
 
-    <!-- Player names Section -->
+    <!-- Player 1 Section -->
     <div>
       <div v-if="duplicateNameError" class="text-red-500 text-sm mb-2">
         {{ duplicateNameError }}
       </div>
       <label class="block font-medium">Player 1 Name</label>
-      <input
-        v-model="player1"
-        type="text"
-        class="mt-1 w-full border rounded px-3 py-2"
-        :class="{'border-red-500': player1Error}"
-      />
+<select
+  v-model="player1"
+  class="mt-1 w-full border rounded px-3 py-2 bg-gray-900 text-white border-gray-700 focus:bg-gray-800 focus:border-blue-500"
+  :class="{'border-red-500': player1Error}"
+>
+  <option value="" disabled>Select player 1</option>
+  <option v-for="player in players" :key="player.id" :value="player.id">{{ player.name }}</option>
+</select>
       <div v-if="player1Error" class="text-red-500 text-sm mt-1">{{ player1Error }}</div>
       <label class="inline-flex items-center mt-2">
         <input type="radio" value="1" v-model="throwFirst" />
@@ -24,14 +26,17 @@
       </label>
     </div>
 
+    <!-- Player 2 Section -->
     <div>
       <label class="block font-medium">Player 2 Name</label>
-      <input
+      <select
         v-model="player2"
-        type="text"
-        class="mt-1 w-full border rounded px-3 py-2"
+        class="mt-1 w-full border rounded px-3 py-2 bg-gray-900 text-white border-gray-700 focus:bg-gray-800 focus:border-blue-500"
         :class="{'border-red-500': player2Error}"
-      />
+      >
+        <option value="" disabled>Select player 2</option>
+        <option v-for="player in players" :key="player.id" :value="player.id">{{ player.name }}</option>
+      </select>
       <div v-if="player2Error" class="text-red-500 text-sm mt-1">{{ player2Error }}</div>
       <label class="inline-flex items-center mt-2">
         <input type="radio" value="2" v-model="throwFirst" />
@@ -97,14 +102,21 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { usePage } from '@inertiajs/vue3';
+<script setup lang="ts">
+import { ref, computed, defineProps, defineOptions } from 'vue'
+import { router, usePage } from '@inertiajs/vue3'
+import AppLayout from '@/layouts/AppLayout.vue';
 
+defineOptions({ layout: AppLayout });
+
+const props = defineProps<{
+  players: Array<{ id: number; name: string }>
+}>();
+
+const players = props.players;
 const page = usePage();
-const player1 = ref('');
-const player2 = ref('');
+const player1 = ref<number | ''>('');
+const player2 = ref<number | ''>('');
 const throwFirst = ref('1');
 const gameType = ref('501');
 const totalSets = ref(1);
@@ -128,18 +140,18 @@ function startGame() {
 
   // Name Validation
   let hasError = false;
-  if (!player1.value.trim()) {
+  if (!player1.value) {
     player1Error.value = 'Player 1 name is required.'
     hasError = true;
   }
-  if (!player2.value.trim()) {
+  if (!player2.value) {
     player2Error.value = 'Player 2 name is required.'
     hasError = true;
   }
 
   // Check for duplicate player names (case-insensitive)
   if (
-    player1.value.trim().toLowerCase() === player2.value.trim().toLowerCase()
+    player1.value === player2.value
   ) {
     duplicateNameError.value = 'Player names must be different.';
     hasError = true;

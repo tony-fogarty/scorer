@@ -17,7 +17,7 @@
       <div class="flex justify-between items-center p-4 text-white font-semibold">
         <div class="flex items-center space-x-4">
           <div :class="{'bg-green-500': currentThrower === 1, 'bg-white': currentThrower !== 1 }" class="w-6 h-6 rounded-full border border-white"></div>
-          <span :class="['text-4xl', { 'font-bold': activePlayer === 1 }]">{{ player1 }}</span>
+          <span :class="['text-4xl', { 'font-bold': activePlayer === 1 }]">{{ player1.name }}</span>
         </div>
         <div class="text-center">
           <div class="text-4xl">{{ sets1 }} - {{ sets2 }}</div>
@@ -26,7 +26,7 @@
           <div class="text-lg">Best of {{ totalLegs }} legs</div>
         </div>
         <div class="flex items-center space-x-4">
-          <span :class="['text-4xl', { 'font-bold': activePlayer === 2 }]">{{ player2 }}</span>
+          <span :class="['text-4xl', { 'font-bold': activePlayer === 2 }]">{{ player2.name }}</span>
           <div :class="{'bg-green-500': currentThrower === 2, 'bg-white': currentThrower !== 2 }" class="w-6 h-6 rounded-full border border-white"></div>
         </div>
       </div>
@@ -122,7 +122,39 @@
 </template>
 
 <script setup>
+function calculateScoreStats(history) {
+  let scores_0_59 = 0;
+  let scores_60_79 = 0;
+  let scores_80_99 = 0;
+  let scores_100_plus = 0;
+  let scores_140_plus = 0;
+  let scores_170_plus = 0;
+  let scores_180 = 0;
+
+  history.forEach(entry => {
+    const s = Number(entry.scored ?? 0);
+    if (s >= 0 && s <= 59) scores_0_59++;
+    if (s >= 60 && s <= 79) scores_60_79++;
+    if (s >= 80 && s <= 99) scores_80_99++;
+    if (s >= 100) scores_100_plus++;
+    if (s >= 140) scores_140_plus++;
+    if (s >= 170) scores_170_plus++;
+    if (s === 180) scores_180++;
+  });
+
+  return {
+    scores_0_59,
+    scores_60_79,
+    scores_80_99,
+    scores_100_plus,
+    scores_140_plus,
+    scores_170_plus,
+    scores_180,
+  };
+}
 import { ref, onMounted, nextTick, computed, onBeforeUnmount } from 'vue';
+import { router } from '@inertiajs/vue3';
+import axios from 'axios';
 
 const props = defineProps({
   game: Object
@@ -154,6 +186,26 @@ const winner = ref(null);
 const legsToWin = computed(() => Math.ceil(totalLegs.value / 2));
 const setsToWin = computed(() => Math.ceil(totalSets.value / 2));
 
+function saveGameState(status = null) {
+  const state = {
+    score1: score1.value,
+    score2: score2.value,
+    legs1: legs1.value,
+    legs2: legs2.value,
+    sets1: sets1.value,
+    sets2: sets2.value,
+    activePlayer: activePlayer.value,
+    currentThrower: currentThrower.value,
+    player1History: player1History.value,
+    player2History: player2History.value,
+  };
+  const data = {
+    state: JSON.stringify(state)
+  };
+  if (status) data.status = status;
+  axios.patch(`/game/${props.game.id}/state`, data);
+}
+
 const focusScoreInput = () => {
   nextTick(() => {
     if (scoreInput.value) {
@@ -183,6 +235,7 @@ const resetGame = () => {
   score.value = '';
   updateThrower();
   focusScoreInput();
+  saveGameState();
 };
 
 const resetSet = () => {
@@ -191,18 +244,63 @@ const resetSet = () => {
   resetGame();
 };
 
-const finishLeg = (dartsUsed) => {
+async function savePlayerStats(dartsUsed) {
+  // Calculate per-player score breakdowns
+  const stats1Ranges = calculateScoreStats(player1History.value);
+  const stats2Ranges = calculateScoreStats(player2History.value);
+
+  const stats1 = {
+    game_id: props.game.id,
+    player_id: player1.value.id,
+    legs_for: legs1.value,
+    legs_against: legs2.value,
+    sets_for: sets1.value,
+    sets_against: sets2.value,
+    total_score: player1History.value.reduce((sum, entry) => sum + (entry.scored || 0), 0),
+    darts_thrown: player1History.value.length * 3,
+    average: player1History.value.length
+      ? (player1History.value.reduce((sum, entry) => sum + (entry.scored || 0), 0) / (player1History.value.length * 3)).toFixed(2)
+      : null,
+    ...stats1Ranges,
+    least_darts: winner.value === 1 ? dartsUsed : null, // only winner gets it
+    high_finish: null, // set this up later!
+  };
+
+  const stats2 = {
+    game_id: props.game.id,
+    player_id: player2.value.id,
+    legs_for: legs2.value,
+    legs_against: legs1.value,
+    sets_for: sets2.value,
+    sets_against: sets1.value,
+    total_score: player2History.value.reduce((sum, entry) => sum + (entry.scored || 0), 0),
+    darts_thrown: player2History.value.length * 3,
+    average: player2History.value.length
+      ? (player2History.value.reduce((sum, entry) => sum + (entry.scored || 0), 0) / (player2History.value.length * 3)).toFixed(2)
+      : null,
+    ...stats2Ranges,
+    least_darts: winner.value === 2 ? dartsUsed : null,
+    high_finish: null,
+  };
+
+  await axios.post(`/game/${props.game.id}/save-stats`, {
+    stats: [stats1, stats2]
+  });
+}
+
+const finishLeg = async (dartsUsed) => {
   if (winner.value === 1) {
     legs1.value++;
     if (legs1.value >= legsToWin.value) {
       sets1.value++;
       if (sets1.value >= setsToWin.value) {
-        alert(`${player1.value} wins the game!`);
-        window.location.href = '/game-settings';
+        await savePlayerStats(dartsUsed); // <-- call this before redirect!
+        router.visit(`/game/${props.game.id}/summary`);
         return;
-      }
+    };
       resetSet();
       showDartsModal.value = false;
+      saveGameState();
       return;
     }
   } else if (winner.value === 2) {
@@ -210,17 +308,19 @@ const finishLeg = (dartsUsed) => {
     if (legs2.value >= legsToWin.value) {
       sets2.value++;
       if (sets2.value >= setsToWin.value) {
-        alert(`${player2.value} wins the game!`);
-        window.location.href = '/game-settings';
+        await savePlayerStats(dartsUsed); // <-- call this before redirect!
+        router.visit(`/game/${props.game.id}/summary`);
         return;
-      }
+      };
       resetSet();
       showDartsModal.value = false;
+      saveGameState();
       return;
     }
   }
   resetGame();
   showDartsModal.value = false;
+  saveGameState();
 };
 
 const keyHandler = (e) => {
@@ -244,6 +344,7 @@ const submitScore = () => {
       score1.value = 0;
       winner.value = 1;
       showDartsModal.value = true;
+      saveGameState();
       return;
     } else if (newRemaining < 2) {
       alert('Bust!');
@@ -261,6 +362,7 @@ const submitScore = () => {
       score2.value = 0;
       winner.value = 2;
       showDartsModal.value = true;
+      saveGameState();
       return;
     } else if (newRemaining < 2) {
       alert('Bust!');
@@ -277,6 +379,7 @@ const submitScore = () => {
   activePlayer.value = activePlayer.value === 1 ? 2 : 1;
   score.value = '';
   focusScoreInput();
+  saveGameState();
 };
 
 const undoLastScore = () => {
@@ -292,6 +395,7 @@ const undoLastScore = () => {
     activePlayer.value = 1;
   }
   focusScoreInput();
+  saveGameState();
 };
 
 const INITIAL_ROW_COUNT = 15;  // 15 rows × 3 darts = 45 darts
@@ -316,6 +420,24 @@ const scoreClass = (sc) => {
 };
 
 onMounted(() => {
+  // Hydrate state from DB if present
+  if (props.game.state && props.game.state !== '[]') {
+    try {
+      const saved = JSON.parse(props.game.state);
+      score1.value = saved.score1 ?? gameType.value;
+      score2.value = saved.score2 ?? gameType.value;
+      legs1.value = saved.legs1 ?? 0;
+      legs2.value = saved.legs2 ?? 0;
+      sets1.value = saved.sets1 ?? 0;
+      sets2.value = saved.sets2 ?? 0;
+      activePlayer.value = saved.activePlayer ?? 1;
+      currentThrower.value = saved.currentThrower ?? 1;
+      player1History.value = saved.player1History ?? [];
+      player2History.value = saved.player2History ?? [];
+    } catch (e) {
+      // ignore and just use default
+    }
+  }
   focusScoreInput();
   updateThrower();
   window.addEventListener('keydown', keyHandler);
