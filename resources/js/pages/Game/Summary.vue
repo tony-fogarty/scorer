@@ -19,9 +19,9 @@
         </thead>
         <tbody>
           <tr v-for="row in totalsRows" :key="row.label" class="border-b border-gray-700">
-            <td class="text-left py-2 px-4">{{ p1[row.key] ?? '—' }}</td>
+            <td class="text-left py-2 px-4">{{ formatStat(p1[row.key]) }}</td>
             <td class="text-center py-2 px-4 font-semibold">{{ row.label }}</td>
-            <td class="text-right py-2 px-4">{{ p2[row.key] ?? '—' }}</td>
+            <td class="text-right py-2 px-4">{{ formatStat(p2[row.key]) }}</td>
           </tr>
         </tbody>
       </table>
@@ -38,10 +38,15 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in averagesRows" :key="row.label" class="border-b border-gray-700">
-            <td class="text-left py-2 px-4">{{ p1[row.key] ?? '—' }}</td>
-            <td class="text-center py-2 px-4 font-semibold">{{ row.label }}</td>
-            <td class="text-right py-2 px-4">{{ p2[row.key] ?? '—' }}</td>
+          <tr>
+            <td class="text-left py-2 px-4">{{ formatAverage(p1.average) }}</td>
+            <td class="text-center py-2 px-4 font-semibold">Dart Average</td>
+            <td class="text-right py-2 px-4">{{ formatAverage(p2.average) }}</td>
+          </tr>
+          <tr>
+            <td class="text-left py-2 px-4">{{ formatAverage(p1.three_dart_average) }}</td>
+            <td class="text-center py-2 px-4 font-semibold">3 Dart Average</td>
+            <td class="text-right py-2 px-4">{{ formatAverage(p2.three_dart_average) }}</td>
           </tr>
         </tbody>
       </table>
@@ -88,28 +93,34 @@ const winnerName = computed(() => {
   return 'Draw';
 });
 
-// Adjust labels/keys to match your stat keys
+// Adjust labels/keys to match your stat keys or new labels
 const totalsRows = [
   { label: 'Sets', key: 'sets_for' },
   { label: 'Legs', key: 'legs_for' },
   { label: '0-59', key: 'scores_0_59' },
-  { label: '60-79', key: 'scores_60_79' },
-  { label: '80-99', key: 'scores_80_99' },
+  { label: '60+', key: 'scores_60_79' },
+  { label: '80+', key: 'scores_80_99' },
   { label: '100+', key: 'scores_100_plus' },
   { label: '140+', key: 'scores_140_plus' },
   { label: '170+', key: 'scores_170_plus' },
   { label: "180's", key: 'scores_180' },
-  { label: 'High Finish', key: 'high_finish' },
-  { label: 'Least Darts', key: 'least_darts' },
+  { label: 'High Finish', key: 'high_finish' },    // <-- backend value
+  { label: 'Least Darts', key: 'least_darts' },    // <-- backend value
   { label: 'Total Score', key: 'total_score' },
   { label: 'Darts Thrown', key: 'darts_thrown' },
 ];
 
-const averagesRows = [
-  { label: 'Average', key: 'average' },
-  // Add more averages if you have them,
-  // e.g., { label: 'First 9', key: 'first_9' }
-];
+// Format stats for table display
+function formatStat(val) {
+  if (val === null || val === undefined || val === '') return '—';
+  return val;
+}
+
+// Format average to 2 decimal places if it's a number
+function formatAverage(val) {
+  if (val === null || val === undefined || val === '' || isNaN(val)) return '—';
+  return Number(val).toFixed(2);
+}
 
 function finishGame() {
   finishing.value = true;

@@ -28,6 +28,7 @@ class PlayerGameStat extends Model
         'total_score',
         'darts_thrown',
         'average',
+        'three_dart_average',
     ];
 
     public function game()

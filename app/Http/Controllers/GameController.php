@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\Game;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Services\GameStatsService;
 
 class GameController extends Controller
 {
@@ -90,15 +91,29 @@ class GameController extends Controller
         Log::info('saveStats called', ['gameId' => $gameId, 'payload' => $request->all()]);
 
         try {
+            $service = new GameStatsService();
+
             foreach ($request->stats as $stat) {
                 Log::info('Processing stat', $stat);
+
+                $calculated = $service->calculate(
+                    $stat['history'] ?? [],
+                    $stat['legs_for'] ?? 0,
+                    $stat['legs_against'] ?? 0,
+                    $stat['sets_for'] ?? 0,
+                    $stat['sets_against'] ?? 0,
+                    $stat['player_id'],
+                    $gameId,
+                    $stat['least_darts'] ?? null,
+                    $stat['leg_stats'] ?? []    // <-- ADDED: pass per-leg stats!
+                );
 
                 \App\Models\PlayerGameStat::updateOrCreate(
                     [
                         'game_id' => $gameId,
                         'player_id' => $stat['player_id'],
                     ],
-                    $stat
+                    $calculated
                 );
             }
             return response()->json(['success' => true]);
@@ -114,8 +129,6 @@ class GameController extends Controller
     public function showSummary($id)
     {
         $game = Game::with(['player1', 'player2', 'playerStats'])->findOrFail($id);
-
-        // If you have stats in state, extract/calculate them here as needed
 
         return Inertia::render('Game/Summary', [
             'game' => $game,

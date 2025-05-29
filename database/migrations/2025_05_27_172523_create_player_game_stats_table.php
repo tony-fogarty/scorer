@@ -28,6 +28,7 @@ class CreatePlayerGameStatsTable extends Migration
             $table->integer('total_score')->default(0);
             $table->integer('darts_thrown')->default(0);
             $table->decimal('average', 5, 2)->nullable();
+            $table->decimal('three_dart_average', 8, 2)->nullable();
             $table->timestamps();
 
             $table->foreign('game_id')->references('id')->on('games')->onDelete('cascade');
