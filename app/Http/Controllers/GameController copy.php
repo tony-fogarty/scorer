@@ -8,7 +8,6 @@ use App\Models\Game;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Services\GameStatsService;
-use App\Helpers\GameStateHelper;
 
 class GameController extends Controller
 {
@@ -22,7 +21,7 @@ class GameController extends Controller
             'games' => $games,
         ]);
     }
-
+    
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -48,10 +47,6 @@ class GameController extends Controller
             'status' => 'in_progress',
         ]);
 
-            $game->load(['player1', 'player2']);
-            $game->state = GameStateHelper::defaultState($game->player1, $game->player2);
-            $game->save();
-
         return redirect()->route('game.show', $game->id);
     }
 
@@ -75,16 +70,20 @@ class GameController extends Controller
     public function updateState(Request $request, $id)
     {
         $game = Game::findOrFail($id);
-
-        if ($request->has('state')) {
-            $game->state = $request->input('state');
-        }
+        $game->state = $request->input('state');
         if ($request->has('status')) {
             $game->status = $request->input('status');
         }
         $game->save();
 
-        return response()->noContent();
+        if ($request->has('status') && $request->input('status') === 'complete') {
+            // Return 204 No Content (recommended)
+            return response()->noContent();
+            // Or if you want to send a message:
+            // return response()->json(['success' => true, 'message' => 'Game finished!']);
+        }
+
+        return response()->json(['success' => true]);
     }
 
     public function saveStats(Request $request, Game $game)
@@ -103,7 +102,7 @@ class GameController extends Controller
             'stats.*.least_darts' => 'nullable|integer',
             'stats.*.leg_stats' => 'array',  // <-- ADDED: validate per-leg stats!
         ]);
-
+    
         Log::info('saveStats called', ['gameId' => $gameId, 'payload' => $request->all()]);
 
         try {

@@ -17,7 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/game/{id}/summary', [GameController::class, 'showSummary'])->name('game.summary');
     Route::get('/games', [GameController::class, 'index'])->name('games.index');
     Route::resource('players', PlayerController::class);
-    Route::post('/game/{id}/save-stats', [GameController::class, 'saveStats'])->name('game.saveStats');
+    Route::post('/game/{game}/save-stats', [GameController::class, 'saveStats']);
 });
 
 require __DIR__.'/settings.php';

@@ -16,9 +16,10 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('player1_id')->nullable()->constrained('players');
             $table->foreignId('player2_id')->nullable()->constrained('players');
-            $table->json('settings'); // Stores legs, sets, game type, etc
+            $table->json('settings')->nullable(); // <-- NO ->change()
             $table->json('state')->nullable(); // Stores current match state (scores, progress)
             $table->enum('status', ['aborted', 'in_progress', 'complete'])->default('in_progress');
+            $table->json('stats_json')->nullable();
             $table->timestamps();
         });
     }
