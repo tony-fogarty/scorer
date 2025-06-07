@@ -335,3 +335,24 @@ export function editScore(gameState, setIdx, legIdx, throwIdx, newScore, darts =
 
   return state
 }
+
+export function getPlayerName(players, playerId) {
+  const p = (players || []).find(p => p.id === playerId);
+  return p ? p.name : `Player ${playerId}`;
+}
+
+export function getPlayerCurrentScore(leg, playerId) {
+  let remain = leg.startScore ?? 501;
+  for (const t of (leg.throws || [])) {
+    if (t.playerId === playerId) remain -= t.scored;
+  }
+  return remain;
+}
+
+export function getPlayerLegsWon(set, playerId) {
+  return (set.legs || []).filter(l => l.winner === playerId).length;
+}
+
+export function getPlayerSetsWon(sets, playerId) {
+  return (sets || []).filter(s => s.winner === playerId).length;
+}

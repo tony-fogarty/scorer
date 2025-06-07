@@ -1,0 +1,97 @@
+/*
+ * n01_new.css
+ *
+ * Copyright (C) 1996-2015 by Ohno Tomoaki. All rights reserved.
+ */
+
+body {
+	-webkit-text-size-adjust: 100%;
+	-ms-content-zooming: none;
+	
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	-webkit-touch-callout: none;
+
+	font-size: 20px;
+	font-family: Arial;
+	background-color: #ffffff;
+	color: #000;
+}
+
+#article {
+	margin: 10px;
+	padding: 50px 0 0 0;
+}
+
+#menu {
+	text-align: center;
+}
+
+#menu_button {
+	width: 50%;
+	margin: 10px 0 10px 0;
+}
+
+input {
+	font-size: 20px;
+}
+
+input[type="button"] {
+	-webkit-appearance: none;
+	padding: 10px;
+	
+	border: 1px solid #aaa;
+	background-color: #eeeeee;
+	color: #000;
+	outline:none;
+
+	border-radius: 10px;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+}
+
+input[type="button"]:active {
+	background-color: #808080;
+	color: #ffffff;
+}
+
+input[type="text"] {
+	width: 90%;
+	margin: 0 0 10px 0;
+}
+
+input[type="number"] {
+	width: 30%;
+	margin: 0 0 10px 0;
+}
+
+input[type="checkbox"] {
+	margin: 3px 3px 3px 0;
+	width: 20px;
+	height: 20px;
+}
+
+label {
+	vertical-align: middle;
+}
+
+select {
+	width: 50%;
+	margin: 0 0 10px 0;
+}
+
+.indent {
+	padding-left: 50px;
+}
+
+#share {
+	text-align: center;
+	font-size: 0px;
+}
+
+.fb-like {
+	margin: 0 10px;
+}
