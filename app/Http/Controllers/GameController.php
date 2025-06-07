@@ -48,9 +48,9 @@ class GameController extends Controller
             'status' => 'in_progress',
         ]);
 
-            $game->load(['player1', 'player2']);
-            $game->state = GameStateHelper::defaultState($game->player1, $game->player2);
-            $game->save();
+        $game->load(['player1', 'player2']);
+        $game->state = GameStateHelper::defaultState($game->player1, $game->player2);
+        $game->save();
 
         return redirect()->route('game.show', $game->id);
     }
@@ -61,10 +61,19 @@ class GameController extends Controller
 
         if ($game->user_id !== Auth::id()) abort(403);
 
+        // Make sure 'settings' is a real array, not a Laravel Collection or JSON string
+        $settings = is_array($game->settings) ? $game->settings : json_decode($game->settings, true);
+
         return Inertia::render('Game/Play', [
-            'game' => $game,
-            'player1' => $game->player1,
-            'player2' => $game->player2,
+            'game' => [
+                'id' => $game->id,
+                'player1' => $game->player1,
+                'player2' => $game->player2,
+                'settings' => $settings,
+                'state' => $game->state,
+                'status' => $game->status,
+                // Add any other required fields here
+            ],
         ]);
     }
 
@@ -141,7 +150,6 @@ class GameController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
 
     public function showSummary($id)
     {
