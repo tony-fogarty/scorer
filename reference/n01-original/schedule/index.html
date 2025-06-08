@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<!-- Copyright (C) 1996-2015 by Ohno Tomoaki. All rights reserved. -->
+<html lang="ja">
+<head>
+	<title>n01 (Schedule Mode)</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="mobile-web-app-capable" content="yes" />
+
+	<link rel="apple-touch-icon" href="n01_v2/image/icon.png">
+	<link rel="shortcut icon" sizes="114x114" href="n01_v2/image/icon.png">
+	<link rel="stylesheet" type="text/css" href="n01_v2/css/reset.css">
+	<link rel="stylesheet" type="text/css" href="n01_v2/css/n01_header.css">
+	<link rel="stylesheet" type="text/css" href="n01_v2/css/n01_schedule.css">
+	<script type="text/javascript" src="n01_v2/js/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="n01_v2/js/n01_util.js"></script>
+	<script type="text/javascript" src="n01_v2/js/n01_data.js"></script>
+	<script type="text/javascript" src="n01_v2/js/n01_schedule.js"></script>
+</head>
+<body>
+	<noscript>JavaScript is required to access this page. Please enable JavaScript.</noscript>
+	<header id="header" style="display:none;">
+		<div id="header_back">
+			<table id="header_table">
+				<tbody>
+					<tr>
+						<td id ="td_button_return" class="td_button"><div id="button_return" class="button">Return</div></td>
+						<td><div id="header_title">Schedule Mode</div></td>
+						<td id ="td_button_game_on" class="td_button"><div id="button_game_on" class="button">Game on</div></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</header>
+	<article id="article">
+		<div id="contents" style="display:none;">
+			<form>
+				<p id="title_match_title" class="title">Title (Optional)</p>
+				<p><input type="text" id="match_title"></p>
+				<hr>
+				<p id="title_player_name" class="title">Player Name / Team Name</p>
+				<p><input type="text" id="p1_name" placeholder="Player 1"></p>
+				<p><input type="text" id="p2_name" placeholder="Player 2"></p>
+				<hr>
+				<p><input type="checkbox" id="change_first">
+					<label id="label_change_first" for="change_first" class="checkbox">First player is exchanged by set start.</label>
+				</p>
+				<p><input type="checkbox" id="exit_result">
+					<label id="label_exit_result" for="exit_result" class="checkbox">Exit When the result is decided.</label>
+				</p>
+				<hr>
+				<p id="title_match_list" class="title">Schedule List</p>
+				<table id="match_list_table" class="match_list_table">
+					<tbody id="user_body">
+					</tbody>
+				</table>
+				<table id="hidden_table" class="hidden_table" style="display:none;">
+					<tbody>
+						<tr id="match_list_title" class="match_list_title">
+							<td class="match_list_title_td" colspan="3"></td>
+							<td class="match_list_button" rowspan="2"><input type="button" value="Edit" class="edit_button"></td>
+							<td class="match_list_button" rowspan="2"><input type="button" value="Del" class="delete_button"></td>
+							<td class="match_list_button" rowspan="2"><input type="button" value="↑" class="up_button"></td>
+							<td class="match_list_button" rowspan="2"><input type="button" value="↓" class="down_button"></td>
+						</tr>
+						<tr id="match_list_item" class="match_list_item">
+							<td class="match_list_name1"></td>
+							<td class="match_list_sep">-</td>
+							<td class="match_list_name2"></td>
+							<td class="match_list_subtitle" style="display:none;"></td>
+							<td class="match_list_startscore" style="display:none;"></td>
+							<td class="match_list_roundlimit" style="display:none;"></td>
+							<td class="match_list_maxround" style="display:none;"></td>
+							<td class="match_list_limitleg" style="display:none;"></td>
+						</tr>
+					</tbody>
+				</table>
+				<div id="add_data">Add Schedule</div>
+				<div id="reset_data">Reset Schedule</div>
+			</form>
+		</div>
+	</article>
+</body>
+</html>
